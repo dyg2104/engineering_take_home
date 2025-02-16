@@ -14,10 +14,18 @@ module Api
       render status: 201, json: {}
     end
 
+    def update
+      building = Building.find(params[:id])
+
+      building.update!(building_params)
+
+      render status: 200, json: {}
+    end
+
     private
 
     def building_params
-      params.permit(:client_id, :address, :city, :state, :zip_code, :custom_fields).slice(:client_id, :address, :city, :state, :zip_code, :custom_fields)
+      params.permit(:id, :client_id, :address, :city, :state, :zip_code, :custom_fields).slice(:client_id, :address, :city, :state, :zip_code)
     end
   end
 end
