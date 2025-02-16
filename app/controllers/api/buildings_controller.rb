@@ -1,7 +1,6 @@
 module Api
   class BuildingsController < ApplicationController
-    before_action :validate_custom_fields!, only: [:create]
-    skip_before_action :verify_authenticity_token, only: [:create]
+    skip_before_action :verify_authenticity_token, only: [:create, :update]
 
     def index
       buildings = Building.all
@@ -22,7 +21,7 @@ module Api
         return
       end
 
-      validate_custom_fields!
+      validate_custom_fields!(params[:client_id])
 
       building = Building.new(building_params)
       custom_fields = begin
@@ -46,7 +45,26 @@ module Api
     def update
       building = Building.find(params[:id])
 
-      building.update!(building_params)
+      validate_custom_fields!(building.client_id)
+
+      if params[:custom_fields].present?
+        custom_fields = begin
+          if params[:custom_fields]
+            params[:custom_fields].map do |custom_field|
+              BuildingCustomField.new(name: custom_field[:name], value: custom_field[:value])
+            end
+          else
+            []
+          end
+        end
+
+        ActiveRecord::Base.transaction do
+          building.update!(building_params)
+          building.building_custom_fields = custom_fields
+        end
+      else
+        building.update!(building_params)
+      end
 
       render status: 200, json: {}
     end
@@ -57,10 +75,10 @@ module Api
       params.permit(:id, :client_id, :address, :city, :state, :zip_code, :custom_fields).slice(:client_id, :address, :city, :state, :zip_code)
     end
 
-    def validate_custom_fields!
+    def validate_custom_fields!(client_id)
       if params[:custom_fields].present?
         params[:custom_fields].each do |custom_field|
-          field = CustomField.where(client_id: params[:client_id], name: custom_field[:name]).first
+          field = CustomField.where(client_id: client_id, name: custom_field[:name]).first
 
           if field.blank?
             render status: 404, json: {}
