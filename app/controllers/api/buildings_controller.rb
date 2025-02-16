@@ -3,13 +3,23 @@ module Api
     skip_before_action :verify_authenticity_token, only: [:create, :update]
 
     def index
-      buildings = Building.all
+      buildings = Building.includes(:client, :building_custom_fields).all
 
       buildings_json = buildings.map do |building|
-        {
+        building_json = {
           id: building.id,
+          client_name: building.client.name,
           address: building.address
         }
+
+        building.building_custom_fields.each do |custom_field|
+          name = custom_field.name
+          value = custom_field.value
+
+          building_json[name] = value
+        end
+
+        building_json
       end
 
       render status: 200, json: buildings_json
