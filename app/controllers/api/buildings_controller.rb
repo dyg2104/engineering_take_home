@@ -1,6 +1,7 @@
 module Api
   class BuildingsController < ApplicationController
-    skip_before_action :verify_authenticity_token
+    before_action :validate_custom_fields!, only: [:create]
+    skip_before_action :verify_authenticity_token, only: [:create]
 
     def index
       buildings = Building.all
@@ -58,7 +59,7 @@ module Api
     def validate_custom_fields!
       if params[:custom_fields].present?
         params[:custom_fields].each do |custom_field|
-          field = CustomField.where(client_id: params[:client_id], field_name: custom_field[:name]).first
+          field = CustomField.where(client_id: params[:client_id], name: custom_field[:name]).first
 
           if field.blank?
             render status: 404, json: {}
