@@ -67,4 +67,6 @@ Rails.application.configure do
 
   # Allow all hosts for tests (disable host authorization)
   config.hosts.clear
+
+  config.action_controller.wrap_parameters_by_default = false
 end
