@@ -37,6 +37,7 @@ module Api
 
       ActiveRecord::Base.transaction do
         building.save!
+        building.building_custom_fields = custom_fields
       end
 
       render status: 201, json: {}

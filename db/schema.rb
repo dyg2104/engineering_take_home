@@ -36,7 +36,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_02_16_221520) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["name"], name: "index_clients_on_name", unique: true
   end
 
   create_table "custom_field_values", force: :cascade do |t|
